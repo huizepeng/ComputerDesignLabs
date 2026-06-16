@@ -1,0 +1,148 @@
+# Test_30_Instr.dat - 30-instruction test covering all CPU ops
+# Format: hex machine code
+# Design: each instruction test has nops between dependent ops for pipeline safety
+
+# 1. LUI x1, 0x12345 → x1 = 0x12345000
+123450b7
+
+# 2. ADDI x2, x0, 0x55 → x2 = 0x55
+05500113
+00000013
+00000013
+
+# 3. ORI x3, x2, 0x0AA → x3 = 0xFF
+0aa1e193
+
+# 4. ANDI x4, x3, 0x00F → x4 = 0xF
+00f1f213
+00000013
+
+# 5. XORI x5, x4, 0xFFF → x5 = 0xFFFFFFFF ^ 0xF → but x4=0xF, xori with 0xFFF sign-extends to 0xFFFFFFF → x5=0xFFFFFFF0
+fff24293
+
+# 6. SLTI x6, x5, 0 → x6 = 1 (since x5 is negative)
+00032293
+
+# 7. SLTIU x7, x5, 0x800 → x7 = 0 (unsigned comparison)
+8003a393
+00000013
+
+# 8. SLLI x8, x5, 4 → x8 = 0xFFFFFF00
+00429293
+
+# 9. SRLI x9, x5, 4 → x9 = 0x0FFFFFFF
+0042d293
+
+# 10. SRAI x10, x5, 8 → x10 sign-extended
+4082d293
+00000013
+
+# 11. ADD x11, x2, x3 → x11 = 0x55 + 0xFF = 0x154
+003105b3
+00000013
+
+# 12. SUB x12, x3, x2 → x12 = 0xFF - 0x55 = 0xAA
+40210633
+
+# 13. SLT x13, x2, x3 → x13 = 1 (0x55 < 0xFF)
+003126b3
+
+# 14. SLTU x14, x2, x3 → x14 = 1 (0x55 < 0xFF unsigned)
+00313733
+00000013
+
+# 15. AND x15, x5, x3 → x15 = 0xFFFFFFF0 & 0xFF = 0xF0
+0037f7b3
+
+# 16. OR x16, x2, x3 → x16 = 0x55 | 0xFF = 0xFF
+00316833
+
+# 17. XOR x17, x2, x3 → x17 = 0x55 ^ 0xFF = 0xAA
+003148b3
+
+# 18. SLL x18, x2, x4 → x18 = 0x55 << 0xF
+00411933
+00000013
+00000013
+
+# 19. SRL x19, x18, x4 → x19 = x18 >> 0xF
+0041d9b3
+
+# 20. SRA x20, x5, x4 → x20 sign-extended
+0042da33
+
+# 21. SW x2 → [0x180] = 0x55
+18202023
+00000013
+00000013
+00000013
+
+# 22. LW x21 ← [0x180] = 0x55
+18002a83
+
+# 23. BEQ x2, x2, +8 → (taken: skip next)
+00210063
+# (this nop skipped if BEQ taken)
+00000013
+00000013
+
+# 24. BNE x2, x3, +8 → (taken: skip next)
+00311263
+# (this nop skipped if BNE taken)
+00000013
+
+# 25. Setup for branch tests: x22 = 10, x23 = 20
+00a00b13
+00000013
+00000013
+01400b93
+00000013
+00000013
+
+# 26. BLT x22, x23, +8 → (taken: 10 < 20)
+017b4263
+# (skipped if taken)
+00000013
+
+# 27. BGE x23, x22, +8 → (taken: 20 >= 10)
+014bda63
+00000013
+
+# 28. BLTU x22, x23, +8 → (taken: unsigned)
+017b6663
+00000013
+
+# 29. BGEU x23, x22, +8 → (taken: unsigned)
+014bfa63
+00000013
+
+# 30. JAL x24, +8 → x24 = return addr, jump to next
+00800fc3
+# (this skipped)
+00000013
+00000013
+00000013
+
+# 31. JALR x25, x24, 0 → return
+000f80e7
+00000013
+00000013
+
+# 32. Store results to memory for verification
+18202023
+18302223
+18402223
+18502223
+18602223
+18702223
+18802223
+18902223
+18a02223
+18b02223
+18c02223
+18d02223
+18e02223
+18f02223
+
+# 33. Infinite loop
+0000006f
